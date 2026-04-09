@@ -34,10 +34,10 @@ pub async fn process_tasks(
                     .iter()
                     .map(|s| format!("{:.1}", s.score))
                     .collect::<Vec<_>>()
-                    .join(", ");
+                    .join(" | ");
 
                 let msg = format!(
-                    "[{} * {}]对接完成, [结果链接]({})  {}",
+                    "| [{} * {}] | [结果链接]({}) | {} |",
                     p_name, l_name, link, scores_str
                 );
 

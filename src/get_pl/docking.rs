@@ -19,7 +19,14 @@ pub async fn run_docking_task(
 
     let mut last_err = String::new();
     for i in 1..=3 {
-        match run_docking_task_single(p_path.clone(), l_path.clone(), semaphore.clone(), root_url.clone()).await {
+        match run_docking_task_single(
+            p_path.clone(),
+            l_path.clone(),
+            semaphore.clone(),
+            root_url.clone(),
+        )
+        .await
+        {
             Ok(res) => return Ok(res),
             Err(e) => {
                 last_err = e;
@@ -28,7 +35,7 @@ pub async fn run_docking_task(
                         "[{} * {}] 对接失败, 正在进行第 {} 次重试... 错误: {}",
                         p_name, l_name, i, last_err
                     );
-                    sleep(Duration::from_secs(5)).await;
+                    sleep(Duration::from_secs(1)).await;
                 }
             }
         }
@@ -185,6 +192,6 @@ async fn run_docking_task_single(
             }
         }
 
-        sleep(Duration::from_secs(5)).await;
+        sleep(Duration::from_secs(1)).await;
     }
 }
