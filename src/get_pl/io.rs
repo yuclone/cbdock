@@ -18,7 +18,13 @@ pub async fn process_tasks(
         .open("result.md")
         .await?;
     let local_time = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
-    result_file.write_all(format!("<h1><center>{}</center></h1> \n> 请注意结果链接有效期, 作者测试时发现服务器只会保存大约一天  \n\n", local_time).as_bytes()).await?;
+    let t1 = format!("<h1><center>{}</center></h1>  \n\n", local_time);
+    let t2 = "> 请注意结果链接有效期, 作者测试时发现服务器只会保存大约一天  \n\n";
+    let t3 = "| 蛋白 * 配体 | 链接 | 打分 | 打分 | 打分 | 打分 | 打分 |  \n";
+    let t4 = "| :---: | :---: | :---: | :---: | :---: | :---: | :---: |  \n";
+    result_file
+        .write_all((t1 + t2 + t3 + t4).as_bytes())
+        .await?;
     let mut all_valid_scores: Vec<DockingScore> = Vec::new();
 
     while let Some(res) = join_set.join_next().await {
