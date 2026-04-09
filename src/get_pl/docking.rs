@@ -17,6 +17,34 @@ pub async fn run_docking_task(
     let p_name = p_path.file_name().unwrap().to_str().unwrap().to_string();
     let l_name = l_path.file_name().unwrap().to_str().unwrap().to_string();
 
+    let mut last_err = String::new();
+    for i in 1..=3 {
+        match run_docking_task_single(p_path.clone(), l_path.clone(), semaphore.clone(), root_url.clone()).await {
+            Ok(res) => return Ok(res),
+            Err(e) => {
+                last_err = e;
+                if i < 3 {
+                    println!(
+                        "[{} * {}] 对接失败, 正在进行第 {} 次重试... 错误: {}",
+                        p_name, l_name, i, last_err
+                    );
+                    sleep(Duration::from_secs(5)).await;
+                }
+            }
+        }
+    }
+    Err(format!("任务在尝试 3 次后仍失败: {}", last_err))
+}
+
+async fn run_docking_task_single(
+    p_path: PathBuf,
+    l_path: PathBuf,
+    semaphore: Arc<Semaphore>,
+    root_url: String,
+) -> Result<(String, String, String, Vec<DockingScore>), String> {
+    let p_name = p_path.file_name().unwrap().to_str().unwrap().to_string();
+    let l_name = l_path.file_name().unwrap().to_str().unwrap().to_string();
+
     // 获取信号量许可，限制并发
     let _permit = semaphore.acquire().await.map_err(|e| e.to_string())?;
 
