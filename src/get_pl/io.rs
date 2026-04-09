@@ -1,8 +1,8 @@
 use super::models::DockingScore;
 use super::network::download_file;
+use chrono::Local;
 use reqwest::Client;
 use std::path::Path;
-// 全部使用 tokio 的异步文件和 IO 模块
 use tokio::fs::{self, File, OpenOptions};
 use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader};
 
@@ -17,7 +17,8 @@ pub async fn process_tasks(
         .append(true)
         .open("result.md")
         .await?;
-
+    let local_time = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+    result_file.write_all(format!("<center>#{}</center> \n>请注意结果链接有效期, 作者测试时发现服务器只会保存大约一天  \n", local_time).as_bytes()).await?;
     let mut all_valid_scores: Vec<DockingScore> = Vec::new();
 
     while let Some(res) = join_set.join_next().await {
