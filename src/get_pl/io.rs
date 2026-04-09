@@ -37,12 +37,12 @@ pub async fn process_tasks(
                     .join(", ");
 
                 let msg = format!(
-                    "[{} *{}]对接完成, [结果链接]({})  {}",
+                    "[{} * {}]对接完成, [结果链接]({})  {}",
                     p_name, l_name, link, scores_str
                 );
 
                 println!(
-                    "[{} *{}]对接完成, [\x1b]8;;{}\x1b\\结果链接\x1b]8;;\x1b\\], {}",
+                    "[{} * {}]对接完成, [\x1b]8;;{}\x1b\\结果链接\x1b]8;;\x1b\\], {}",
                     p_name, l_name, link, scores_str
                 );
                 result_file
@@ -52,7 +52,7 @@ pub async fn process_tasks(
                 all_valid_scores.append(&mut task_scores);
             }
             Ok(Err(err)) => {
-                let msg = format!("❌ [{} *{}]对接失败: {}", err.0, err.1, err.2);
+                let msg = format!("❌ [{} * {}]对接失败: {}", err.0, err.1, err.2);
                 println!("{}", msg);
                 result_file
                     .write_all(format!("{}  \n", msg).as_bytes())
