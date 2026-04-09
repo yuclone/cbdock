@@ -11,5 +11,5 @@ cb-dock2自动批量对接脚本，使用rust语言
 
 这里对获取到的蛋白质-配体对接文件进行了修改, 否则cbdock2给出的对接pdb文件格式plip网页不认, 找不到结合位点, 有需要原始文件可以点击链接下载, 所有链接都输出在终端以及result.md文件里了. 作者也不知道什么原因, 也不想知道  
 ![示例图](./assets/use1.png)  
-![示例图](./assets/use1.png)  
+![示例图](./assets/use2.png)  
 ![示例图](./assets/result.png)
