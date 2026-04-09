@@ -46,11 +46,11 @@ pub async fn get_root_url(
     config_url: Option<String>,
 ) -> Result<String, Box<dyn std::error::Error>> {
     if let Some(url) = config_url {
-        println!("使用指定的 root_url: {}", url);
+        println!("使用指定的服务器: {}", url);
         return Ok(url);
     }
 
-    println!("正在从服务器获取 root_url...");
+    println!("正在解析默认服务器地址...");
     let root_html = fetch_progress_text(client, "https://cadd.labshare.cn/cb-dock2/").await?;
 
     let root_urls: Vec<&str> = super::regex_utils::get_regex_url()
@@ -59,11 +59,11 @@ pub async fn get_root_url(
         .collect();
 
     if root_urls.is_empty() {
-        return Err("无法从主页匹配到 root_url".into());
+        return Err("解析失败, 请手动搜索cbdock2服务器url或稍后重试".into());
     }
 
     let fetched_url = root_urls[0].to_string();
-    println!("自动获取到 root_url: {}", fetched_url);
+    println!("自动获取到默认服务器url: {}", fetched_url);
     Ok(fetched_url)
 }
 

@@ -6,6 +6,60 @@ use std::path::Path;
 use tokio::fs::{self, File, OpenOptions};
 use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader};
 
+/// 处理所有任务的执行结果并写入 Markdown 文件
+pub async fn process_tasks(
+    join_set: &mut tokio::task::JoinSet<
+        Result<(String, String, String, Vec<DockingScore>), (String, String, String)>,
+    >,
+) -> Result<Vec<DockingScore>, Box<dyn std::error::Error>> {
+    let mut result_file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open("result.md")
+        .await?;
+
+    let mut all_valid_scores: Vec<DockingScore> = Vec::new();
+
+    while let Some(res) = join_set.join_next().await {
+        match res {
+            Ok(Ok((p_name, l_name, link, mut task_scores))) => {
+                let scores_str = task_scores
+                    .iter()
+                    .map(|s| format!("{:.1}", s.score))
+                    .collect::<Vec<_>>()
+                    .join(", ");
+
+                let msg = format!(
+                    "[{} *{}]对接完成, [结果链接]({})  {}",
+                    p_name, l_name, link, scores_str
+                );
+
+                println!(
+                    "[{} *{}]对接完成, [\x1b]8;;{}\x1b\\结果链接\x1b]8;;\x1b\\], {}",
+                    p_name, l_name, link, scores_str
+                );
+                result_file
+                    .write_all(format!("{}  \n", msg).as_bytes())
+                    .await?;
+
+                all_valid_scores.append(&mut task_scores);
+            }
+            Ok(Err(err)) => {
+                let msg = format!("❌ [{} *{}]对接失败: {}", err.0, err.1, err.2);
+                println!("{}", msg);
+                result_file
+                    .write_all(format!("{}  \n", msg).as_bytes())
+                    .await?;
+            }
+            Err(e) => {
+                println!("⚠️ 运行时崩溃: {}", e);
+            }
+        }
+    }
+    result_file.flush().await?;
+    Ok(all_valid_scores)
+}
+
 /// 提取 Top 结果并下载产物（全异步版）
 pub async fn download_top_results(
     client: &Client,

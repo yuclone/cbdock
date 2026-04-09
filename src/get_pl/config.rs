@@ -1,13 +1,5 @@
+use super::models::Config;
 use std::env;
-
-#[derive(Debug)]
-pub struct Config {
-    pub protein_dir: String,
-    pub ligand_dir: String,
-    pub concurrency: usize,
-    pub top_size: usize,
-    pub root_url: Option<String>,
-}
 
 impl Config {
     pub fn parse() -> Self {
@@ -54,7 +46,7 @@ impl Config {
                     }
                 }
                 "-h" | "--help" => {
-                    println!("用法: auto_tool [选项]");
+                    println!("用法: cbdock [选项]");
                     println!("选项:");
                     println!("  -p <路径>   蛋白质文件夹路径 (默认: ./蛋白质)");
                     println!("  -l <路径>   配体文件夹路径 (默认: ./配体)");
