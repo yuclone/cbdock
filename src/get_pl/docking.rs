@@ -1,6 +1,7 @@
 use super::models::DockingScore;
 use super::network::{create_file_part, fetch_progress_text};
 use super::regex_utils::*;
+use super::utils::strip_docking_extension;
 use reqwest::{Client, multipart};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -161,8 +162,8 @@ async fn run_docking_task_single(
                 let conf_text = fetch_progress_text(&client, &conf_url).await?;
                 let mut scores = Vec::new();
 
-                let p_name_clean = p_name.trim_end_matches(".pdb");
-                let l_name_clean = l_name.trim_end_matches(".mol2");
+                let p_name_clean = strip_docking_extension(&p_name);
+                let l_name_clean = strip_docking_extension(&l_name);
 
                 for line in conf_text.lines().skip(1) {
                     let parts: Vec<&str> = line.split_whitespace().collect();

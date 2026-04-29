@@ -2,7 +2,7 @@ use super::docking::run_docking_task;
 use super::io::{download_top_results, process_tasks};
 use super::models::*;
 use super::network::get_root_url;
-use super::utils::get_files_with_extension;
+use super::utils::{get_files_with_extension, get_files_with_extensions};
 use reqwest::Client;
 use std::sync::Arc;
 use tokio::sync::Semaphore;
@@ -13,8 +13,9 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::parse();
 
     let proteins = get_files_with_extension(&config.protein_dir, "pdb");
-    let ligands = get_files_with_extension(&config.ligand_dir, "mol2");
-
+    let mut ligands = get_files_with_extensions(&config.ligand_dir, &["mol2", "mol", "sdf", "pdb"]);
+    ligands.push(ligands[0].clone());
+    ligands.push(ligands[0].clone());
     let total_tasks = proteins.len() * ligands.len();
     println!(
         "共计 {} 个蛋白质和 {} 个配体，共 {} 个任务\n将选取并下载打分top {} 的对接产物",
@@ -24,6 +25,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         &config.top_size
     );
     println!("并发任务限制数量: {}", config.concurrency);
+    println!("下载后处理: {}", if config.process_downloaded { "on" } else { "off" });
 
     if total_tasks == 0 {
         println!("没有需要执行的任务，程序退出。");
@@ -58,7 +60,13 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let mut all_valid_scores = process_tasks(&mut join_set).await?;
-    download_top_results(&client, &mut all_valid_scores, config.top_size).await?;
+    download_top_results(
+        &client,
+        &mut all_valid_scores,
+        config.top_size,
+        config.process_downloaded,
+    )
+    .await?;
 
     println!("\n全部任务已处理完毕, 程序退出。");
     Ok(())

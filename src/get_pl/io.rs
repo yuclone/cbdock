@@ -1,5 +1,6 @@
 use super::models::DockingScore;
 use super::network::download_file;
+use super::utils::strip_docking_extension;
 use chrono::Local;
 use reqwest::Client;
 use std::path::Path;
@@ -72,6 +73,7 @@ pub async fn download_top_results(
     client: &Client,
     all_valid_scores: &mut Vec<DockingScore>,
     top_size: usize,
+    process_downloaded: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if all_valid_scores.is_empty() {
         println!("\n⚠️ 所有的对接结果中都没有找到有效打分。");
@@ -118,8 +120,8 @@ pub async fn download_top_results(
             .write_all(format!("{}  \n", md_msg).as_bytes())
             .await?;
 
-        let safe_p = item.protein.trim_end_matches(".pdb");
-        let safe_l = item.ligand.trim_end_matches(".mol2");
+        let safe_p = strip_docking_extension(&item.protein);
+        let safe_l = strip_docking_extension(&item.ligand);
         let file_name = format!("TOP{}_{}_{}.pdb", rank, safe_p, safe_l);
         let dest_path = download_dir.join(&file_name);
 
@@ -127,8 +129,11 @@ pub async fn download_top_results(
         match download_file(client, &item.download_link, &dest_path).await {
             Ok(_) => {
                 println!("  ✅ 下载成功: {:?}", dest_path);
-                // 这里现在需要 await，因为函数变异步了
-                process_file_content(&dest_path).await?;
+                if process_downloaded {
+                    process_file_content(&dest_path).await?;
+                } else {
+                    println!("  ⏭️ 已跳过下载文件后处理");
+                }
             }
             Err(e) => println!("  ❌ 下载失败: {}", e),
         }

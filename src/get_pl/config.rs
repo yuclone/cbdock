@@ -9,6 +9,7 @@ impl Config {
             concurrency: 5,
             top_size: 3,
             root_url: None,
+            process_downloaded: true,
         };
 
         let mut args = env::args().skip(1);
@@ -45,6 +46,19 @@ impl Config {
                         config.root_url = Some(val);
                     }
                 }
+                "-d" => {
+                    if let Some(val) = args.next() {
+                        let mode = val.to_lowercase();
+                        config.process_downloaded = match mode.as_str() {
+                            "on" => true,
+                            "off" => false,
+                            _ => {
+                                println!("下载后处理参数解析失败，默认使用 on");
+                                true
+                            }
+                        };
+                    }
+                }
                 "-h" | "--help" => {
                     println!("用法: cbdock [选项]");
                     println!("选项:");
@@ -53,6 +67,7 @@ impl Config {
                     println!("  -a <数字>   选取打分最高的数量");
                     println!("  -n <数字>   并发任务数量 (默认: 5)");
                     println!("  -u <URL>    指定 root_url，跳过网页自动抓取");
+                    println!("  -d <on|off> 下载后是否处理对接文件 (默认: on)");
                     std::process::exit(0);
                 }
                 _ => println!("警告: 未知参数 '{}'，可使用 -h 查看帮助", arg),

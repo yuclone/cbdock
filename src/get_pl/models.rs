@@ -13,4 +13,5 @@ pub struct Config {
     pub concurrency: usize,
     pub top_size: usize,
     pub root_url: Option<String>,
+    pub process_downloaded: bool,
 }
