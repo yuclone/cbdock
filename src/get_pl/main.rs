@@ -13,9 +13,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::parse();
 
     let proteins = get_files_with_extension(&config.protein_dir, "pdb");
-    let mut ligands = get_files_with_extensions(&config.ligand_dir, &["mol2", "mol", "sdf", "pdb"]);
-    ligands.push(ligands[0].clone());
-    ligands.push(ligands[0].clone());
+    let ligands = get_files_with_extensions(&config.ligand_dir, &["mol2", "mol", "sdf", "pdb"]);
     let total_tasks = proteins.len() * ligands.len();
     println!(
         "共计 {} 个蛋白质和 {} 个配体，共 {} 个任务\n将选取并下载打分top {} 的对接产物",
@@ -25,7 +23,14 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         &config.top_size
     );
     println!("并发任务限制数量: {}", config.concurrency);
-    println!("下载后处理: {}", if config.process_downloaded { "on" } else { "off" });
+    println!(
+        "下载后处理: {}",
+        if config.process_downloaded {
+            "on"
+        } else {
+            "off"
+        }
+    );
 
     if total_tasks == 0 {
         println!("没有需要执行的任务，程序退出。");
